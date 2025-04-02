@@ -1,5 +1,6 @@
 
 {
+  "id": "/controle-tanques/",
   "name": "Controle de Tanques",
   "short_name": "Tanques",
   "description": "Aplicativo para controle de transferência de tanques com cálculo de volume.",
