@@ -2,7 +2,7 @@
 {
   "name": "Controle de Transferência de Tanques",
   "short_name": "Tanques",
-  "start_url": "controle_tanques_interface.html",
+  "start_url": "/controle-tanques/controle_tanques_interface.html",
   "display": "standalone",
   "background_color": "#f4f4f4",
   "theme_color": "#0a9396",
