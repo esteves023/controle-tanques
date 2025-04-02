@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Transferência de Tanques</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      padding: 16px;
+      max-width: 900px;
+      margin: auto;
+      font-size: 1.1rem;
+    }
+    h1, h2 {
+      color: #005f73;
+      font-size: 1.5rem;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 12px;
+    }
+    input[type="number"], select {
+      padding: 14px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .checkboxes {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .checkboxes label {
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .checkboxes img {
+      width: 28px;
+      height: 28px;
+      margin-right: 10px;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 12px;
+    }
+    button {
+      padding: 16px;
+      font-size: 1.05rem;
+      background-color: #0a9396;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #007d84;
+    }
+    .result-box {
+      background: #e0f7fa;
+      padding: 18px;
+      border-left: 6px solid #007d84;
+      margin-top: 24px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 1rem;
+    }
+    .total-enviado {
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin-top: 12px;
+    }
+    .progress-bar {
+      margin-top: 16px;
+      background: #ccc;
+      border-radius: 30px;
+      overflow: hidden;
+      height: 24px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #00a896;
+      width: 0%;
+      text-align: center;
+      color: white;
+      font-size: 1rem;
+      line-height: 24px;
+    }
+    .alert {
+      color: #b00020;
+      background: #ffe6e6;
+      padding: 14px;
+      border-left: 6px solid #b00020;
+      border-radius: 6px;
+      margin-top: 20px;
+      display: none;
+      font-size: 1rem;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.25rem;
+      }
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <style>
+    body.dark-mode {
+      background-color: #1e1e1e;
+      color: #f4f4f4;
+    }
+    .dark-mode .result-box {
+      background-color: #2a2a2a;
+      border-color: #00b4d8;
+    }
+    .dark-mode input,
+    .dark-mode select {
+      background-color: #2a2a2a;
+      color: #f4f4f4;
+      border-color: #666;
+    }
+    .dark-mode button:not(:disabled) {
+      background-color: #009688;
+    }
+    .dark-mode .alert {
+      background-color: #4a1c1c;
+      color: #fff0f0;
+    }
+    button:disabled {
+      background-color: #ccc !important;
+      color: #666;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button:disabled:hover {
+      background-color: #ccc !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>Transferência de Tanques</h1>
+  <label for="profundidade">Profundidade Sondada (m):</label>
+  <input type="number" id="profundidade" step="0.01" placeholder="Ex: 3.7">
+  <label for="em_andamento">Tanque em Transferência:</label>
+  <select id="em_andamento">
+    <option value="">Selecione...</option>
+    <option value="TQ1">TQ1</option>
+    <option value="TQ2">TQ2</option>
+    <option value="TQ3">TQ3</option>
+    <option value="TQ4">TQ4</option>
+  </select>
+  <div class="container">
+    <div class="checkboxes">
+      <label><img src="https://img.icons8.com/fluency/48/000000/water.png" /><input type="checkbox" id="tq1_finalizado"> TQ1 Finalizado</label>
+      <label><img src="https://img.icons8.com/fluency/48/000000/water.png" /><input type="checkbox" id="tq2_finalizado"> TQ2 Finalizado</label>
+      <label><img src="https://img.icons8.com/fluency/48/000000/water.png" /><input type="checkbox" id="tq3_finalizado"> TQ3 Finalizado</label>
+      <label><img src="https://img.icons8.com/fluency/48/000000/water.png" /><input type="checkbox" id="tq4_finalizado"> TQ4 Finalizado</label>
+    </div>
+    <div class="controls">
+      <button onclick="calcular()">Calcular Totais</button>
+      <button onclick="resetar()" style="background-color: #ae2012;">Resetar</button>
+      <button onclick="alternarModo()" style="background-color: #6c757d;">Modo Escuro/Claro</button>
+    </div>
+  </div>
+  <div id="resultado" class="result-box"></div>
+  <div class="progress-bar"><div id="progressFill" class="progress-bar-fill">0%</div></div>
+  <div id="alerta" class="alert"></div>
+
+  
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const profundidadeInput = document.getElementById("profundidade");
+      const botaoCalcular = document.querySelector("button[onclick='calcular()']");
+      botaoCalcular.disabled = true;
+      profundidadeInput.addEventListener("input", () => {
+        botaoCalcular.disabled = profundidadeInput.value.trim() === "";
+      });
+    });
+
+    const profundidades = [6, 5.5, 5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5];
+    const tq1_tq2 = [164.85, 150.30, 136.00, 123.00, 109.00, 95.60, 82.00, 68.30, 54.71, 41.00, 27.33, 13.60].map(v => v * 0.96);
+    const tq3_tq4 = [186.00, 170.50, 155.00, 139.50, 124.00, 108.00, 93.00, 77.50, 62.00, 46.50, 31.00, 15.50].map(v => v * 0.96);
+    const valor96_tq1_tq2 = 158.256;
+    const valor96_tq3_tq4 = 178.56;
+    const totalCapacidade = valor96_tq1_tq2 * 2 + valor96_tq3_tq4 * 2;
+
+    function interpolar(x, x_vals, y_vals) {
+      for (let i = 0; i < x_vals.length - 1; i++) {
+        if (x <= x_vals[i] && x >= x_vals[i + 1]) {
+          let x0 = x_vals[i], x1 = x_vals[i + 1];
+          let y0 = y_vals[i], y1 = y_vals[i + 1];
+          return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
+        }
+      }
+      return 0;
+    }
+
+    function calcular() {
+      let prof = parseFloat(document.getElementById("profundidade").value);
+      let estados = [
+        { nome: "TQ1", finalizado: document.getElementById("tq1_finalizado").checked, tipo: "tq1_tq2" },
+        { nome: "TQ2", finalizado: document.getElementById("tq2_finalizado").checked, tipo: "tq1_tq2" },
+        { nome: "TQ3", finalizado: document.getElementById("tq3_finalizado").checked, tipo: "tq3_tq4" },
+        { nome: "TQ4", finalizado: document.getElementById("tq4_finalizado").checked, tipo: "tq3_tq4" }
+      ];
+      let total = 0;
+      let interpolado = 0;
+      let usadoNaInterpolacao = null;
+
+      for (let i = 0; i < estados.length; i++) {
+        let tanque = estados[i];
+        if (tanque.finalizado) {
+          total += tanque.tipo === "tq1_tq2" ? valor96_tq1_tq2 : valor96_tq3_tq4;
+        } else if (!usadoNaInterpolacao) {
+          usadoNaInterpolacao = tanque;
+          interpolado = interpolar(prof,
+            tanque.tipo === "tq1_tq2" ? profundidades : profundidades,
+            tanque.tipo === "tq1_tq2" ? tq1_tq2 : tq3_tq4
+          );
+          let cheio = tanque.tipo === "tq1_tq2" ? valor96_tq1_tq2 : valor96_tq3_tq4;
+          total += (cheio - interpolado);
+        }
+      }
+
+      let percent = Math.min(100, (total / totalCapacidade) * 100);
+      document.getElementById("progressFill").style.width = percent.toFixed(0) + "%";
+      document.getElementById("progressFill").innerText = percent.toFixed(0) + "%";
+
+      let resultado = document.getElementById("resultado");
+      let alerta = document.getElementById("alerta");
+      alerta.style.display = "none";
+
+      if (!usadoNaInterpolacao && total === 0) {
+        alerta.innerText = "Por favor, preencha os dados corretamente.";
+        alerta.style.display = "block";
+        resultado.innerHTML = "";
+        return;
+      }
+
+      resultado.innerHTML = usadoNaInterpolacao
+        ? `Transferindo: ${usadoNaInterpolacao.nome}<br>Interpolado: ${interpolado.toFixed(2)} m³<br><div class='total-enviado'>Total Enviado: ${total.toFixed(2)} m³</div>`
+        : `<div class='total-enviado'>Total Enviado: ${total.toFixed(2)} m³</div>`;
+    }
+
+    function resetar() {
+      document.getElementById("profundidade").value = "";
+      ["tq1_finalizado", "tq2_finalizado", "tq3_finalizado", "tq4_finalizado"].forEach(id => {
+        document.getElementById(id).checked = false;
+      });
+      document.getElementById("resultado").innerHTML = "";
+      document.getElementById("progressFill").style.width = "0%";
+      document.getElementById("progressFill").innerText = "0%";
+      document.getElementById("alerta").style.display = "none";
+    }
+
+    function alternarModo() {
+      document.body.classList.toggle("dark-mode");
+    }
+  </script>
+</body>
+</html>
