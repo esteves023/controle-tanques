@@ -1,12 +1,16 @@
 
 {
-  "name": "Controle de Transferência de Tanques",
+  "name": "Controle de Tanques",
   "short_name": "Tanques",
+  "description": "Aplicativo para controle de transferência de tanques com cálculo de volume.",
   "start_url": "/controle-tanques/controle_tanques_interface.html",
+  "scope": "/controle-tanques/",
   "display": "standalone",
   "background_color": "#f4f4f4",
   "theme_color": "#0a9396",
   "orientation": "portrait",
+  "lang": "pt-BR",
+  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
@@ -18,5 +22,10 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [],
+  "categories": ["utilities", "productivity"],
+  "iarc_rating_id": "e10+",
+  "prefer_related_applications": false,
+  "related_applications": []
 }
