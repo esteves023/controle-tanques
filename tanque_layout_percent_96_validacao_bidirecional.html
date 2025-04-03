@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transferência de Tanques</title>
+<style>
+    :root {
+      --bg: #f9f9f9;
+      --fg: #1a1a1a;
+      --card: #ffffff;
+      --btn: #ccc;
+      --accent: #007bff;
+      --drop: #00aaff;
+    }
+    body.dark {
+      --bg: #121212;
+      --fg: #f4f4f4;
+      --card: #1e1e1e;
+      --btn: #555;
+      --accent: #0d6efd;
+      --drop: #00cfff;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      max-width: 480px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      color: var(--accent);
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      background: var(--card);
+      color: var(--fg);
+    }
+    .checkbox-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checkbox-item svg {
+      flex-shrink: 0;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+    .checkbox-item input[type="number"] {
+      width: 60px;
+      margin-left: auto;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-primary { background-color: #d9d9d9; color: #000; }
+    .btn-danger  { background-color: #b30000; color: #fff; }
+    .btn-toggle  { background-color: #555; color: #fff; }
+    .resultado {
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<h1>Transferência de Tanques</h1>
+<label for="profundidade">Profundidade Sondada (m):</label>
+<input id="profundidade" max="6" min="0" placeholder="Ex: 3.7" step="0.01" type="number"/>
+<label for="tanqueAtual">Tanque em uso agora:</label>
+<select id="tanqueAtual">
+<option value="">Selecione...</option>
+<option value="1">TQ1</option>
+<option value="2">TQ2</option>
+<option value="3">TQ3</option>
+<option value="4">TQ4</option>
+</select>
+<div style="font-weight: bold; text-align: right; margin-bottom: 4px; margin-left: auto; width: 60px;">%</div><div class="checkbox-container">
+<div class="checkbox-item">
+<svg fill="#00aaff" height="20" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 10.1 5 14.5C5 18.6 8.1 22 12 22C15.9 22 19 18.6 19 14.5C19 10.1 12 2 12 2Z"></path></svg>
+<input id="checkTQ1" type="checkbox"/>
+<label for="checkTQ1">TQ1 Finalizado</label>
+<input id="percentTQ1" max="100" min="0" placeholder="%" type="number" value="96"/>
+</div>
+<div class="checkbox-item">
+<svg fill="#00aaff" height="20" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 10.1 5 14.5C5 18.6 8.1 22 12 22C15.9 22 19 18.6 19 14.5C19 10.1 12 2 12 2Z"></path></svg>
+<input id="checkTQ2" type="checkbox"/>
+<label for="checkTQ2">TQ2 Finalizado</label>
+<input id="percentTQ2" max="100" min="0" placeholder="%" type="number" value="96"/>
+</div>
+<div class="checkbox-item">
+<svg fill="#00aaff" height="20" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 10.1 5 14.5C5 18.6 8.1 22 12 22C15.9 22 19 18.6 19 14.5C19 10.1 12 2 12 2Z"></path></svg>
+<input id="checkTQ3" type="checkbox"/>
+<label for="checkTQ3">TQ3 Finalizado</label>
+<input id="percentTQ3" max="100" min="0" placeholder="%" type="number" value="96"/>
+</div>
+<div class="checkbox-item">
+<svg fill="#00aaff" height="20" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C12 2 5 10.1 5 14.5C5 18.6 8.1 22 12 22C15.9 22 19 18.6 19 14.5C19 10.1 12 2 12 2Z"></path></svg>
+<input id="checkTQ4" type="checkbox"/>
+<label for="checkTQ4">TQ4 Finalizado</label>
+<input id="percentTQ4" max="100" min="0" placeholder="%" type="number" value="96"/>
+</div>
+</div>
+<button class="btn-primary" disabled="" id="calcularBtn" onclick="calcular()">Calcular Totais</button>
+<button class="btn-danger" onclick="resetar()">Resetar</button>
+<button class="btn-toggle" onclick="alternarTema()">Modo Escuro/Claro</button>
+<progress id="barraProgresso" max="100" style="width:100%; margin-top:12px; display:none;" value="0"></progress>
+<div class="resultado" id="resultado"></div>
+<script>
+    const tabelaTQ12 = {
+      6.0: 164.85, 5.5: 150.30, 5.0: 136.00, 4.5: 123.00, 4.0: 109.00,
+      3.5: 95.60, 3.0: 82.00, 2.5: 68.30, 2.0: 54.71, 1.5: 41.00,
+      1.0: 27.33, 0.5: 13.60
+    };
+    const tabelaTQ34 = {
+      6.0: 186.00, 5.5: 170.50, 5.0: 155.00, 4.5: 139.50, 4.0: 124.00,
+      3.5: 108.00, 3.0: 93.00, 2.5: 77.50, 2.0: 62.00, 1.5: 46.50,
+      1.0: 31.00, 0.5: 15.50
+    };
+
+    function interpolar(tabela, profundidade) {
+      const keys = Object.keys(tabela).map(Number).sort((a, b) => b - a);
+      for (let i = 0; i < keys.length - 1; i++) {
+        let p1 = keys[i], p2 = keys[i + 1];
+        if (profundidade <= p1 && profundidade >= p2) {
+          let v1 = tabela[p1], v2 = tabela[p2];
+          return v1 + ((v2 - v1) * (profundidade - p1) / (p2 - p1));
+        }
+      }
+      return tabela[profundidade] || 0;
+    }
+
+    function calcular() {
+      const profundidade = parseFloat(document.getElementById("profundidade").value);
+      const atualTQ = document.getElementById("tanqueAtual").value;
+      if (!atualTQ || isNaN(profundidade)) {
+        alert("Preencha a profundidade e selecione o tanque em uso");
+        return;
+      }
+
+      let total = 0;
+      [1, 2, 3, 4].forEach(num => {
+        let pct = parseFloat(document.getElementById(`percentTQ${num}`).value || "100");
+        let max = num <= 2 ? 164.85 : 186.00;
+        let tab = num <= 2 ? tabelaTQ12 : tabelaTQ34;
+        let inicial = max * (pct / 100);
+
+        if (num.toString() === atualTQ) {
+          let atual = parseFloat(interpolar(tab, profundidade));
+          total += inicial - atual;
+        } else {
+          let check = document.getElementById(`checkTQ${num}`).checked;
+          if (check) {
+            total += inicial;
+          }
+        }
+      });
+
+      
+      const barra = document.getElementById("barraProgresso");
+      barra.style.display = "block";
+      barra.value = Math.min(100, (total / 300) * 100);  // Supondo 300 m³ como total possível
+      document.getElementById("resultado").innerText = `Total bombeado: ${total.toFixed(2)} m³`;
+    
+    }
+
+    function alternarTema() {
+      document.body.classList.toggle("dark");
+    }
+
+    function resetar() {
+      document.getElementById("profundidade").value = "";
+      document.getElementById("tanqueAtual").value = "";
+      [1, 2, 3, 4].forEach(num => {
+        document.getElementById(`checkTQ${num}`).checked = false;
+        document.getElementById(`percentTQ${num}`).value = 100;
+      });
+      document.getElementById("resultado").innerText = "";
+    }
+  
+    const btn = document.getElementById("calcularBtn");
+    const profInput = document.getElementById("profundidade");
+    const tanqueAtual = document.getElementById("tanqueAtual");
+
+    function checarCampos() {
+      if (profInput.value && tanqueAtual.value) {
+        btn.disabled = false;
+        btn.style.backgroundColor = '#007bff';
+        btn.style.color = '#fff';
+      } else {
+        btn.disabled = true;
+        btn.style.backgroundColor = '#d9d9d9';
+        btn.style.color = '#000';
+      }
+    }
+
+    profInput.addEventListener("input", checarCampos);
+    tanqueAtual.addEventListener("change", checarCampos);
+
+
+    // Impede marcar um tanque como finalizado se for o mesmo selecionado como em uso
+    [1, 2, 3, 4].forEach(num => {
+      const check = document.getElementById(`checkTQ${num}`);
+      check.addEventListener('change', () => {
+        const atual = document.getElementById('tanqueAtual').value;
+        if (atual === num.toString() && check.checked) {
+          alert('Você não pode marcar como finalizado o tanque que está em uso.');
+          check.checked = false;
+        }
+      });
+    });
+
+
+
+    // Impede marcar como finalizado o tanque em uso e vice-versa
+    const tanqueAtualEl = document.getElementById("tanqueAtual");
+
+    [1, 2, 3, 4].forEach(num => {
+      const check = document.getElementById(`checkTQ${num}`);
+      check.addEventListener('change', () => {
+        const atual = tanqueAtualEl.value;
+        if (atual === num.toString() && check.checked) {
+          alert('Você não pode marcar como finalizado o tanque que está em uso.');
+          check.checked = false;
+        }
+      });
+    });
+
+    tanqueAtualEl.addEventListener('change', () => {
+      const atual = tanqueAtualEl.value;
+      const check = document.getElementById(`checkTQ${atual}`);
+      if (check && check.checked) {
+        alert('Você não pode selecionar como "em uso" um tanque que já está finalizado.');
+        tanqueAtualEl.value = '';
+      }
+    });
+    </script>
+</body>
+</html>
